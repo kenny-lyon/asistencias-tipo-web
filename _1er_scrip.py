@@ -8,9 +8,10 @@ from datetime import datetime
 from dni_database import DniDatabase
 
 class FrmConsultaDNI:
-    def __init__(self, root):
+    def __init__(self, root, restart_callback):
         self.root = root
         self.root.title("Consulta DNI")
+        self.restart_callback = restart_callback
 
         self.db = DniDatabase()
 
@@ -51,8 +52,6 @@ class FrmConsultaDNI:
 
         self.lblMensaje = Label(root, text="")
         self.lblMensaje.grid(row=7, column=0, columnspan=2)
-
-        self.load_existing_records()
 
     def extraer_contenido_entre_nombre(self, cadena, nombre_inicio, nombre_fin):
         inicio = cadena.find(nombre_inicio)
@@ -145,6 +144,8 @@ class FrmConsultaDNI:
             self.db.insert_record(numero_dni, self.txtApellidoPaterno.get(), self.txtApellidoMaterno.get(), self.txtNombres.get(), fecha_hora)
 
     def agregar_a_tabla(self, dni, apellido_paterno, apellido_materno, nombres, fecha_hora):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
         self.tree.insert("", "end", values=(dni, apellido_paterno, apellido_materno, nombres, fecha_hora))
 
     def guardar_dni(self):
@@ -158,19 +159,21 @@ class FrmConsultaDNI:
             messagebox.showerror("Error", "Todos los campos deben estar llenos")
             return
         
-        self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, fecha_hora)
-        self.db.insert_record(numero_dni, apellido_paterno, apellido_materno, nombres, fecha_hora)
-        messagebox.showinfo("Guardar DNI", "Datos guardados correctamente")
+        if self.db.insert_record(numero_dni, apellido_paterno, apellido_materno, nombres, fecha_hora):
+            self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, fecha_hora)
+            messagebox.showinfo("Guardar DNI", "Se registró su asistencia satisfactoriamente")
+        else:
+            messagebox.showwarning("Guardar DNI", "Ya existe un registro con este DNI en la fecha actual")
 
-    def load_existing_records(self):
-        records = self.db.fetch_all_records()
-        for record in records:
-            self.tree.insert("", "end", values=(record[1], record[2], record[3], record[4], record[5]))
+        # Reiniciar sesión
+        self.root.destroy()
+        self.restart_callback()
 
     def __del__(self):
         self.db.close()
 
 if __name__ == "__main__":
     root = Tk()
-    app = FrmConsultaDNI(root)
+    app = FrmConsultaDNI(root, None)
     root.mainloop()
+
