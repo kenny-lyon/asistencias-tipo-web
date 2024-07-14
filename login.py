@@ -1,3 +1,4 @@
+#login:  con esto se inicia los demas codigos ( este es el main )
 from tkinter import *
 from _1er_scrip import FrmConsultaDNI
 from dni_report import FrmReporteDNI
@@ -22,7 +23,7 @@ class Login:
     def login_user(self):
         self.root.destroy()
         user_root = Tk()
-        app = FrmConsultaDNI(user_root)
+        app = FrmConsultaDNI(user_root, self.restart_login)
         user_root.mainloop()
 
     def login_admin(self):
@@ -30,6 +31,11 @@ class Login:
         admin_root = Tk()
         app = FrmReporteDNI(admin_root)
         admin_root.mainloop()
+
+    def restart_login(self):
+        root = Tk()
+        app = Login(root)
+        root.mainloop()
 
 if __name__ == "__main__":
     root = Tk()
