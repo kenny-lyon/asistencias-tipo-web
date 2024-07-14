@@ -22,13 +22,28 @@ class DniDatabase:
 
     def insert_record(self, dni, apellido_paterno, apellido_materno, nombres, fecha_hora):
         with self.connection:
-            self.connection.execute(
-                """
-                INSERT INTO registros (dni, apellido_paterno, apellido_materno, nombres, fecha_hora)
-                VALUES (?, ?, ?, ?, ?)
-                """, 
-                (dni, apellido_paterno, apellido_materno, nombres, fecha_hora)
-            )
+            if not self.record_exists(dni, fecha_hora):
+                self.connection.execute(
+                    """
+                    INSERT INTO registros (dni, apellido_paterno, apellido_materno, nombres, fecha_hora)
+                    VALUES (?, ?, ?, ?, ?)
+                    """, 
+                    (dni, apellido_paterno, apellido_materno, nombres, fecha_hora)
+                )
+                return True
+            else:
+                return False
+
+    def record_exists(self, dni, fecha_hora):
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            SELECT 1 FROM registros
+            WHERE dni = ? AND DATE(fecha_hora) = DATE(?)
+            """, 
+            (dni, fecha_hora)
+        )
+        return cursor.fetchone() is not None
 
     def fetch_all_records(self):
         cursor = self.connection.cursor()
