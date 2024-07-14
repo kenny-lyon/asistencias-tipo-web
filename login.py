@@ -17,7 +17,7 @@ class Login:
         self.btnLoginUser = Button(root, text="Iniciar como Usuario", command=self.login_user)
         self.btnLoginUser.grid(row=2, column=0, padx=10, pady=10)
 
-        self.btnLoginAdmin = Button(root, text="Iniciar como Admin", command=self.login_admin)
+        self.btnLoginAdmin = Button(root, text="Iniciar como Admin", command=self.show_admin_login)
         self.btnLoginAdmin.grid(row=2, column=1, padx=10, pady=10)
 
     def login_user(self):
@@ -26,11 +26,36 @@ class Login:
         app = FrmConsultaDNI(user_root, self.restart_login)
         user_root.mainloop()
 
+    def show_admin_login(self):
+        self.admin_login_window = Toplevel(self.root)
+        self.admin_login_window.title("Admin Login")
+
+        self.lblAdminUser = Label(self.admin_login_window, text="Usuario:")
+        self.lblAdminUser.grid(row=0, column=0, padx=10, pady=10)
+        self.entryAdminUser = Entry(self.admin_login_window)
+        self.entryAdminUser.grid(row=0, column=1, padx=10, pady=10)
+
+        self.lblAdminPassword = Label(self.admin_login_window, text="Contraseña:")
+        self.lblAdminPassword.grid(row=1, column=0, padx=10, pady=10)
+        self.entryAdminPassword = Entry(self.admin_login_window, show="*")
+        self.entryAdminPassword.grid(row=1, column=1, padx=10, pady=10)
+
+        self.btnAdminLogin = Button(self.admin_login_window, text="Login", command=self.login_admin)
+        self.btnAdminLogin.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+
     def login_admin(self):
-        self.root.destroy()
-        admin_root = Tk()
-        app = FrmReporteDNI(admin_root)
-        admin_root.mainloop()
+        username = self.entryAdminUser.get()
+        password = self.entryAdminPassword.get()
+
+        if username == "admin" and password == "1234":
+            self.admin_login_window.destroy()
+            self.root.destroy()
+            admin_root = Tk()
+            app = FrmReporteDNI(admin_root)
+            admin_root.mainloop()
+        else:
+            self.lblError = Label(self.admin_login_window, text="Usuario o contraseña incorrectos", fg="red")
+            self.lblError.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
 
     def restart_login(self):
         root = Tk()
