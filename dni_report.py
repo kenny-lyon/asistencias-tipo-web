@@ -2,9 +2,10 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from datetime import datetime
-from tkcalendar import Calendar, DateEntry
+from tkcalendar import Calendar
 from dni_database import DniDatabase
 from fpdf import FPDF
+import openpyxl
 
 class FrmReporteDNI:
     def __init__(self, root):
@@ -28,7 +29,10 @@ class FrmReporteDNI:
         self.tree.grid(row=2, column=0, columnspan=2)
 
         self.btnPDF = Button(root, text="Convertir a PDF", command=self.convertir_a_pdf)
-        self.btnPDF.grid(row=3, column=0, columnspan=2, pady=10)
+        self.btnPDF.grid(row=3, column=0, pady=10)
+
+        self.btnExcel = Button(root, text="Convertir a Excel", command=self.convertir_a_excel)
+        self.btnExcel.grid(row=3, column=1, pady=10)
 
         self.load_today_records()
 
@@ -88,6 +92,23 @@ class FrmReporteDNI:
 
         pdf.output("reporte_dni.pdf")
         messagebox.showinfo("Éxito", "Los registros se han convertido a PDF correctamente.")
+
+    def convertir_a_excel(self):
+        records = self.db.fetch_all_records()
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Reporte de DNI"
+
+        # Headers
+        headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"]
+        sheet.append(headers)
+
+        # Data rows
+        for record in records:
+            sheet.append([record[1], record[2], record[3], record[4], record[5]])
+
+        workbook.save("reporte_dni.xlsx")
+        messagebox.showinfo("Éxito", "Los registros se han convertido a Excel correctamente.")
 
     def __del__(self):
         self.db.close()
