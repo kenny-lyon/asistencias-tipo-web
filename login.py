@@ -7,10 +7,10 @@ from PIL import Image, ImageTk
 class Login:
     def __init__(self, root):
         self.root = root
-        self.root.title("Login")
+        self.root.title("ingresar")
 
-        # Cargar y mostrar la imagen
-        self.img = Image.open("C:/Users/KENNY/Downloads/Estadistica Informatica.png")
+        # carga la imagen del login
+        self.img = Image.open("C:/Users/yuliana/OneDrive/Escritorio/DNI registro/Estadistica Informatica.png")
         self.img = self.img.resize((200, 200), Image.LANCZOS)
         self.photo = ImageTk.PhotoImage(self.img)
         self.lblImage = Label(root, image=self.photo)
@@ -19,7 +19,7 @@ class Login:
         self.lblWelcome = Label(root, text="Bienvenido a nuestra prueba de registro de asistencia")
         self.lblWelcome.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 
-        # Mostrar la fecha y hora actual
+        # Muestra la hora en tiempo real
         self.lblFecha = Label(root, text="Fecha:")
         self.lblFecha.grid(row=2, column=0, padx=10, pady=10)
         self.lblFechaValue = Label(root, text=datetime.now().strftime("%Y-%m-%d"))
@@ -33,10 +33,10 @@ class Login:
         self.lblPrompt = Label(root, text="¿Cómo desea iniciar?")
         self.lblPrompt.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
 
-        self.btnLoginUser = Button(root, text="Iniciar como Usuario", command=self.login_user)
+        self.btnLoginUser = Button(root, text="Ingresar como Usuario", command=self.login_user)
         self.btnLoginUser.grid(row=5, column=0, padx=10, pady=10)
 
-        self.btnLoginAdmin = Button(root, text="Iniciar como Admin", command=self.show_admin_login)
+        self.btnLoginAdmin = Button(root, text="Ingresar como Admin", command=self.show_admin_login)
         self.btnLoginAdmin.grid(row=5, column=1, padx=10, pady=10)
 
         # Actualizar la hora cada segundo
@@ -67,7 +67,7 @@ class Login:
         self.entryAdminPassword = Entry(self.admin_login_window, show="*")
         self.entryAdminPassword.grid(row=1, column=1, padx=10, pady=10)
 
-        self.btnAdminLogin = Button(self.admin_login_window, text="Login", command=self.login_admin)
+        self.btnAdminLogin = Button(self.admin_login_window, text="ingresar", command=self.login_admin)
         self.btnAdminLogin.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
     def login_admin(self):
@@ -93,3 +93,4 @@ if __name__ == "__main__":
     root = Tk()
     app = Login(root)
     root.mainloop()
+
