@@ -4,6 +4,7 @@ from tkinter import messagebox
 from datetime import datetime
 from tkcalendar import Calendar, DateEntry
 from dni_database import DniDatabase
+from fpdf import FPDF
 
 class FrmReporteDNI:
     def __init__(self, root):
@@ -25,6 +26,9 @@ class FrmReporteDNI:
         self.tree.heading("Nombres", text="Nombres")
         self.tree.heading("Fecha y Hora", text="Fecha y Hora")
         self.tree.grid(row=2, column=0, columnspan=2)
+
+        self.btnPDF = Button(root, text="Convertir a PDF", command=self.convertir_a_pdf)
+        self.btnPDF.grid(row=3, column=0, columnspan=2, pady=10)
 
         self.load_today_records()
 
@@ -58,6 +62,32 @@ class FrmReporteDNI:
             self.tree.delete(record)
         for record in records:
             self.tree.insert("", "end", values=(record[1], record[2], record[3], record[4], record[5]))
+
+    def convertir_a_pdf(self):
+        records = self.db.fetch_all_records()
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+
+        pdf.cell(200, 10, txt="Reporte de DNI", ln=True, align='C')
+
+        # Headers
+        headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"]
+        for header in headers:
+            pdf.cell(40, 10, header, border=1)
+        pdf.ln()
+
+        # Data rows
+        for record in records:
+            pdf.cell(40, 10, record[1], border=1)
+            pdf.cell(40, 10, record[2], border=1)
+            pdf.cell(40, 10, record[3], border=1)
+            pdf.cell(40, 10, record[4], border=1)
+            pdf.cell(40, 10, record[5], border=1)
+            pdf.ln()
+
+        pdf.output("reporte_dni.pdf")
+        messagebox.showinfo("Éxito", "Los registros se han convertido a PDF correctamente.")
 
     def __del__(self):
         self.db.close()
