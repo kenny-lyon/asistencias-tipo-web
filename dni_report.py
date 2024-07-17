@@ -10,7 +10,7 @@ import openpyxl
 class FrmReporteDNI:
     def __init__(self, root):
         self.root = root
-      self.root.title("Reporte de  de DNI")  
+      self.root.title("Reporte de asistencia de DNI")  
 
         self.db = DniDatabase()
 
