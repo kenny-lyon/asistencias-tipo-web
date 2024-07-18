@@ -2,45 +2,51 @@ import requests
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
-import time
 from datetime import datetime
 from dni_database import DniDatabase
 
 class DniConsultationApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Consulta DNI")
+        self.root.title("Consulta y Registro de DNI")
         self.db = DniDatabase()
+        
         self.create_widgets()
         self.layout_widgets()
 
     def create_widgets(self):
+        # Labels and Entries for DNI consultation
         self.lblDni = Label(self.root, text="Número DNI:")
         self.txtDni = Entry(self.root)
         self.txtDni.bind('<Return>', self.consult_dni_event)
-        self.btnConsult = Button(self.root, text="Consultar", command=self.consult_dni)
-        self.lblMessage = Label(self.root, text="")
-        
+        self.btnConsult = Button(self.root, text="Consultar DNI", command=self.consult_dni)
+        self.lblMessage = Label(self.root, text="", fg="red")
+
+        # Labels and Entries for registering DNI information
         self.lblApellidoPaterno = Label(self.root, text="Apellido Paterno:")
         self.txtApellidoPaterno = Entry(self.root)
         self.lblApellidoMaterno = Label(self.root, text="Apellido Materno:")
         self.txtApellidoMaterno = Entry(self.root)
         self.lblNombres = Label(self.root, text="Nombres:")
         self.txtNombres = Entry(self.root)
-        self.btnSave = Button(self.root, text="Guardar", command=self.save_dni)
+        self.btnSave = Button(self.root, text="Guardar Registro", command=self.save_dni)
 
+        # Treeview to display consulted and registered DNIs
         self.tree = ttk.Treeview(self.root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"), show='headings')
         for col in self.tree["columns"]:
             self.tree.heading(col, text=col)
-        
-        self.btnExit = Button(self.root, text="Regresar", command=self.exit_app)
+
+        # Buttons for actions
+        self.btnExit = Button(self.root, text="Salir", command=self.exit_app)
 
     def layout_widgets(self):
+        # Grid layout for DNI consultation
         self.lblDni.grid(row=0, column=0, padx=10, pady=5, sticky=W)
         self.txtDni.grid(row=0, column=1, padx=10, pady=5)
         self.btnConsult.grid(row=1, column=0, columnspan=2, pady=10)
         self.lblMessage.grid(row=2, column=0, columnspan=2, pady=5)
 
+        # Grid layout for registering DNI information
         self.lblApellidoPaterno.grid(row=3, column=0, padx=10, pady=5, sticky=W)
         self.txtApellidoPaterno.grid(row=3, column=1, padx=10, pady=5)
         self.lblApellidoMaterno.grid(row=4, column=0, padx=10, pady=5, sticky=W)
@@ -49,7 +55,10 @@ class DniConsultationApp:
         self.txtNombres.grid(row=5, column=1, padx=10, pady=5)
         self.btnSave.grid(row=6, column=0, columnspan=2, pady=10)
 
+        # Grid layout for displaying consulted and registered DNIs
         self.tree.grid(row=7, column=0, columnspan=2, padx=10, pady=10)
+
+        # Grid layout for exit button
         self.btnExit.grid(row=8, column=0, columnspan=2, pady=10)
 
     def consult_dni_event(self, event):
@@ -63,14 +72,16 @@ class DniConsultationApp:
             return
 
         self.btnConsult.config(state=DISABLED)
-        start_time = time.time()
-        
-        token, session = self.get_token()
+        start_time = datetime.now()
+
+        session = requests.Session()
+        token = self.get_token(session)
         if token:
             response = self.fetch_dni_data(session, token, dni)
             if response:
                 message, fecha_hora = self.parse_dni_response(response, dni)
-                self.lblMessage.config(text=f"Procesado en {time.time() - start_time:.2f} seg.")
+                elapsed_time = (datetime.now() - start_time).total_seconds()
+                self.lblMessage.config(text=f"Procesado en {elapsed_time:.2f} segundos.")
                 if 'exitosamente' in message:
                     self.add_to_table(dni, fecha_hora)
                     self.db.insert_record(dni, self.txtApellidoPaterno.get(), self.txtApellidoMaterno.get(), self.txtNombres.get(), fecha_hora)
@@ -78,7 +89,7 @@ class DniConsultationApp:
             else:
                 messagebox.showwarning("Consulta DNI", "No se pudo obtener la información del DNI.")
         else:
-            messagebox.showwarning("Consulta DNI", "No se pudo obtener el token.")
+            messagebox.showwarning("Consulta DNI", "No se pudo obtener el token de autenticación.")
 
         self.btnConsult.config(state=NORMAL)
         self.txtDni.focus()
@@ -90,19 +101,31 @@ class DniConsultationApp:
         self.txtNombres.delete(0, END)
         self.lblMessage.config(text="")
 
-    def get_token(self):
-        session = requests.Session()
-        response = session.get("https://eldni.com/pe/buscar-por-dni")
+    def get_token(self, session):
+        url = "https://eldni.com/pe/buscar-por-dni"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = session.get(url, headers=headers)
         if response.status_code == 200:
             token = self.extract_between(response.text, 'name="_token" value="', '">')
-            return token, session
-        return None, None
+            return token
+        return None
 
     def fetch_dni_data(self, session, token, dni):
-        data = {"_token": token, "dni": dni}
-        response = session.post("https://eldni.com/pe/buscar-por-dni", data=data)
+        url = "https://eldni.com/pe/buscar-por-dni"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Referer": "https://eldni.com/pe/buscar-por-dni",
+            "Origin": "https://eldni.com"
+        }
+        data = {
+            "_token": token,
+            "dni": dni
+        }
+        response = session.post(url, headers=headers, data=data)
         if response.status_code == 200:
-            return self.extract_between(response.text, '<table class="table table-striped table-scroll">', '</table>')
+            return response.text
         return None
 
     def parse_dni_response(self, response, dni):
@@ -111,7 +134,7 @@ class DniConsultationApp:
             self.txtApellidoPaterno.insert(0, data[2])
             self.txtApellidoMaterno.insert(0, data[3])
             self.txtNombres.insert(0, data[1])
-            return f"Consulta de DNI {dni} realizada exitosamente.", datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            return f"Consulta exitosa para el DNI {dni}.", datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         return f"No se pudo obtener información para el DNI {dni}.", None
 
     def add_to_table(self, dni, fecha_hora):
@@ -121,35 +144,25 @@ class DniConsultationApp:
 
     def save_dni(self):
         dni = self.txtDni.get().strip()
-        ap_paterno = self.txtApellidoPaterno.get().strip()
-        ap_materno = self.txtApellidoMaterno.get().strip()
+        apellido_paterno = self.txtApellidoPaterno.get().strip()
+        apellido_materno = self.txtApellidoMaterno.get().strip()
         nombres = self.txtNombres.get().strip()
         fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        if not (dni and ap_paterno and ap_materno and nombres):
+        if not (dni and apellido_paterno and apellido_materno and nombres):
             messagebox.showerror("Error", "Todos los campos deben estar llenos.")
             return
 
-        if self.db.insert_record(dni, ap_paterno, ap_materno, nombres, fecha_hora):
+        if self.db.insert_record(dni, apellido_paterno, apellido_materno, nombres, fecha_hora):
             self.add_to_table(dni, fecha_hora)
-            messagebox.showinfo("Guardar DNI", "DNI guardado satisfactoriamente.")
+            messagebox.showinfo("Guardar DNI", "Registro guardado exitosamente.")
         else:
-            messagebox.showwarning("Guardar DNI", "El DNI ya existe para la fecha actual.")
+            messagebox.showwarning("Guardar DNI", "Ya existe un registro con este DNI para la fecha actual.")
 
     def exit_app(self):
         self.root.destroy()
-        restart_login()
-
-    @staticmethod
-    def extract_between(text, start, end):
-        return text.split(start)[-1].split(end)[0] if start in text and end in text else ""
 
 if __name__ == "__main__":
-    def restart_login():
-        root = Tk()
-        app = DniConsultationApp(root)
-        root.mainloop()
-
     root = Tk()
     app = DniConsultationApp(root)
     root.mainloop()
