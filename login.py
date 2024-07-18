@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 class Login:
     def __init__(self, root):
         self.root = root
-        self.root.title("Login")
+        self.root.title("ingresar")
 
         # Cargar y mostrar la imagen
         self.img = Image.open("C:/Users/KENNY/Downloads/Estadistica Informatica.png")
