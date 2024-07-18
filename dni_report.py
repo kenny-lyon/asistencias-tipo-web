@@ -8,9 +8,10 @@ from fpdf import FPDF
 import openpyxl
 
 class FrmReporteDNI:
-    def __init__(self, root):
+    def __init__(self, root, restart_callback):
         self.root = root
-      self.root.title("Reporte de asistencia de DNI")  
+        self.root.title("Reporte de asistencia de DNI")
+        self.restart_callback = restart_callback
 
         self.db = DniDatabase()
 
@@ -34,7 +35,14 @@ class FrmReporteDNI:
         self.btnExcel = Button(root, text="Convertir a Excel", command=self.convertir_a_excel)
         self.btnExcel.grid(row=3, column=1, pady=10)
 
+        self.btnBackToLogin = Button(root, text="Volver al Login", command=self.volver_al_login)
+        self.btnBackToLogin.grid(row=4, column=0, columnspan=2)
+
         self.load_today_records()
+
+    def volver_al_login(self):
+        self.root.destroy()
+        self.restart_callback()
 
     def abrir_calendario(self):
         self.cal_window = Toplevel(self.root)
@@ -83,15 +91,12 @@ class FrmReporteDNI:
 
         # Data rows
         for record in records:
-            pdf.cell(40, 10, record[1], border=1)
-            pdf.cell(40, 10, record[2], border=1)
-            pdf.cell(40, 10, record[3], border=1)
-            pdf.cell(40, 10, record[4], border=1)
-            pdf.cell(40, 10, record[5], border=1)
+            for item in record[1:]:
+                pdf.cell(40, 10, str(item), border=1)
             pdf.ln()
 
         pdf.output("reporte_dni.pdf")
-        messagebox.showinfo("Éxito", "Los registros se han convertido a PDF correctamente.")
+        messagebox.showinfo("Información", "El reporte se ha guardado como PDF")
 
     def convertir_a_excel(self):
         records = self.db.fetch_all_records()
@@ -105,15 +110,11 @@ class FrmReporteDNI:
 
         # Data rows
         for record in records:
-            sheet.append([record[1], record[2], record[3], record[4], record[5]])
+            sheet.append(record[1:])
 
         workbook.save("reporte_dni.xlsx")
-        messagebox.showinfo("Éxito", "Los registros se han convertido a Excel correctamente.")
+        messagebox.showinfo("Información", "El reporte se ha guardado como Excel")
 
     def __del__(self):
         self.db.close()
 
-if __name__ == "__main__":
-    root = Tk()
-    app = FrmReporteDNI(root)
-    root.mainloop()
