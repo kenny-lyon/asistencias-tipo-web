@@ -85,7 +85,7 @@ class FrmReporteDNI:
         for record in self.tree.get_children():
             self.tree.delete(record)
         for record in records:
-            self.tree.insert("", "end", values=(record[1], record[2], record[3], record[4], record[5]))
+            self.tree.insert("", "end", values=(record[0], record[1], record[2], record[3], record[4]))
 
     def convertir_a_pdf(self):
         records = self.db.fetch_all_records()
@@ -101,7 +101,7 @@ class FrmReporteDNI:
         pdf.ln()
 
         for record in records:
-            for item in record[1:]:
+            for item in record:
                 pdf.cell(40, 10, str(item), border=1)
             pdf.ln()
 
@@ -118,7 +118,7 @@ class FrmReporteDNI:
         sheet.append(headers)
 
         for record in records:
-            sheet.append(record[1:])
+            sheet.append(record)
 
         workbook.save("reporte_dni.xlsx")
         messagebox.showinfo("Información", "El reporte se ha guardado como Excel")
@@ -132,8 +132,4 @@ if __name__ == "__main__":
         app = FrmReporteDNI(root, restart_login)
         root.mainloop()
 
-    root = Tk()
-    app = FrmReporteDNI(root, restart_login)
-    root.mainloop()
-
-
+    restart_login()
