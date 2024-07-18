@@ -8,35 +8,37 @@ class Login:
     def __init__(self, root):
         self.root = root
         self.root.title("Ingresar")
+        self.root.geometry("400x500")
+        self.root.configure(bg="#f0f0f0")
 
         # Cargar y mostrar la imagen
         self.img = Image.open("C:/Users/yuliana/OneDrive/Escritorio/DNI registro/Estadistica Informatica.png")
         self.img = self.img.resize((200, 200), Image.LANCZOS)
         self.photo = ImageTk.PhotoImage(self.img)
-        self.lblImage = Label(root, image=self.photo)
+        self.lblImage = Label(root, image=self.photo, bg="#f0f0f0")
         self.lblImage.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
 
-        self.lblWelcome = Label(root, text="Bienvenido a nuestra prueba de registro de asistencia")
+        self.lblWelcome = Label(root, text="Bienvenido a nuestra prueba de registro de asistencia", font=("Helvetica", 12, "bold"), bg="#f0f0f0")
         self.lblWelcome.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 
         # Mostrar la fecha y hora actual
-        self.lblFecha = Label(root, text="Fecha:")
-        self.lblFecha.grid(row=2, column=0, padx=10, pady=10)
-        self.lblFechaValue = Label(root, text=datetime.now().strftime("%Y-%m-%d"))
-        self.lblFechaValue.grid(row=2, column=1, padx=10, pady=10)
+        self.lblFecha = Label(root, text="Fecha:", font=("Helvetica", 10), bg="#f0f0f0")
+        self.lblFecha.grid(row=2, column=0, padx=10, pady=10, sticky=E)
+        self.lblFechaValue = Label(root, text=datetime.now().strftime("%Y-%m-%d"), font=("Helvetica", 10), bg="#f0f0f0")
+        self.lblFechaValue.grid(row=2, column=1, padx=10, pady=10, sticky=W)
 
-        self.lblHora = Label(root, text="Hora:")
-        self.lblHora.grid(row=3, column=0, padx=10, pady=10)
-        self.lblHoraValue = Label(root, text=datetime.now().strftime("%H:%M:%S"))
-        self.lblHoraValue.grid(row=3, column=1, padx=10, pady=10)
+        self.lblHora = Label(root, text="Hora:", font=("Helvetica", 10), bg="#f0f0f0")
+        self.lblHora.grid(row=3, column=0, padx=10, pady=10, sticky=E)
+        self.lblHoraValue = Label(root, text=datetime.now().strftime("%H:%M:%S"), font=("Helvetica", 10), bg="#f0f0f0")
+        self.lblHoraValue.grid(row=3, column=1, padx=10, pady=10, sticky=W)
 
-        self.lblPrompt = Label(root, text="¿Cómo desea iniciar?")
+        self.lblPrompt = Label(root, text="¿Cómo desea iniciar?", font=("Helvetica", 10), bg="#f0f0f0")
         self.lblPrompt.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
 
-        self.btnLoginUser = Button(root, text="Iniciar como Usuario", command=self.login_user)
+        self.btnLoginUser = Button(root, text="Iniciar como Usuario", command=self.login_user, width=20, bg="#4CAF50", fg="white", font=("Helvetica", 10))
         self.btnLoginUser.grid(row=5, column=0, padx=10, pady=10)
 
-        self.btnLoginAdmin = Button(root, text="Iniciar como Admin", command=self.show_admin_login)
+        self.btnLoginAdmin = Button(root, text="Iniciar como Admin", command=self.show_admin_login, width=20, bg="#2196F3", fg="white", font=("Helvetica", 10))
         self.btnLoginAdmin.grid(row=5, column=1, padx=10, pady=10)
 
         # Actualizar la hora cada segundo
@@ -56,18 +58,20 @@ class Login:
     def show_admin_login(self):
         self.admin_login_window = Toplevel(self.root)
         self.admin_login_window.title("Admin Login")
+        self.admin_login_window.geometry("300x200")
+        self.admin_login_window.configure(bg="#f0f0f0")
 
-        self.lblAdminUser = Label(self.admin_login_window, text="Usuario:")
-        self.lblAdminUser.grid(row=0, column=0, padx=10, pady=10)
-        self.entryAdminUser = Entry(self.admin_login_window)
+        self.lblAdminUser = Label(self.admin_login_window, text="Usuario:", font=("Helvetica", 10), bg="#f0f0f0")
+        self.lblAdminUser.grid(row=0, column=0, padx=10, pady=10, sticky=E)
+        self.entryAdminUser = Entry(self.admin_login_window, font=("Helvetica", 10))
         self.entryAdminUser.grid(row=0, column=1, padx=10, pady=10)
 
-        self.lblAdminPassword = Label(self.admin_login_window, text="Contraseña:")
-        self.lblAdminPassword.grid(row=1, column=0, padx=10, pady=10)
-        self.entryAdminPassword = Entry(self.admin_login_window, show="*")
+        self.lblAdminPassword = Label(self.admin_login_window, text="Contraseña:", font=("Helvetica", 10), bg="#f0f0f0")
+        self.lblAdminPassword.grid(row=1, column=0, padx=10, pady=10, sticky=E)
+        self.entryAdminPassword = Entry(self.admin_login_window, show="*", font=("Helvetica", 10))
         self.entryAdminPassword.grid(row=1, column=1, padx=10, pady=10)
 
-        self.btnAdminLogin = Button(self.admin_login_window, text="INGRESAR", command=self.login_admin)
+        self.btnAdminLogin = Button(self.admin_login_window, text="INGRESAR", command=self.login_admin, width=20, bg="#f44336", fg="white", font=("Helvetica", 10))
         self.btnAdminLogin.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
     def login_admin(self):
@@ -81,7 +85,7 @@ class Login:
             app = FrmReporteDNI(admin_root, self.restart_login)
             admin_root.mainloop()
         else:
-            self.lblError = Label(self.admin_login_window, text="Usuario o contraseña incorrectos", fg="red")
+            self.lblError = Label(self.admin_login_window, text="Usuario o contraseña incorrectos", fg="red", font=("Helvetica", 10), bg="#f0f0f0")
             self.lblError.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
 
     def restart_login(self):
@@ -93,3 +97,4 @@ if __name__ == "__main__":
     root = Tk()
     app = Login(root)
     root.mainloop()
+
