@@ -7,10 +7,10 @@ from PIL import Image, ImageTk
 class Login:
     def __init__(self, root):
         self.root = root
-        self.root.title("Login")
+        self.root.title("Ingresar")
 
         # Cargar y mostrar la imagen
-        self.img = Image.open("C:/Users/KENNY/Downloads/Estadistica Informatica.png")
+        self.img = Image.open("C:/Users/yuliana/OneDrive/Escritorio/DNI registro/Estadistica Informatica.png")
         self.img = self.img.resize((200, 200), Image.LANCZOS)
         self.photo = ImageTk.PhotoImage(self.img)
         self.lblImage = Label(root, image=self.photo)
@@ -67,7 +67,7 @@ class Login:
         self.entryAdminPassword = Entry(self.admin_login_window, show="*")
         self.entryAdminPassword.grid(row=1, column=1, padx=10, pady=10)
 
-        self.btnAdminLogin = Button(self.admin_login_window, text="Login", command=self.login_admin)
+        self.btnAdminLogin = Button(self.admin_login_window, text="INGRESAR", command=self.login_admin)
         self.btnAdminLogin.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
     def login_admin(self):
@@ -78,7 +78,7 @@ class Login:
             self.admin_login_window.destroy()
             self.root.destroy()
             admin_root = Tk()
-            app = FrmReporteDNI(admin_root)
+            app = FrmReporteDNI(admin_root, self.restart_login)
             admin_root.mainloop()
         else:
             self.lblError = Label(self.admin_login_window, text="Usuario o contraseña incorrectos", fg="red")
