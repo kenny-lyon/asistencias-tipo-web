@@ -40,7 +40,7 @@ class FrmConsultaDNI:
         self.txtNombres.grid(row=4, column=1)
 
         self.btnGuardar = Button(root, text="Guardar", command=self.guardar_dni)
-        self.btnGuardar.grid(row=5, column=0, columnspan=2)
+        self.btnGuardar.grid(row=3, column=0, columnspan=2)
 
         self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"), show='headings')
         self.tree.heading("DNI", text="DNI")
@@ -53,8 +53,8 @@ class FrmConsultaDNI:
         self.lblMensaje = Label(root, text="")
         self.lblMensaje.grid(row=7, column=0, columnspan=2)
 
-        self.btnExit = Button(root, text="Salir", command=self.salir)
-        self.btnExit.grid(row=8, column=0, columnspan=2)
+        self.btnExit = Button(root, text="REGRESAR", command=self.salir)
+        self.btnExit.grid(row=7, column=0, columnspan=2)
 
     def extraer_contenido_entre_nombre(self, cadena, nombre_inicio, nombre_fin):
         inicio = cadena.find(nombre_inicio)
@@ -188,5 +188,6 @@ if __name__ == "__main__":
     root = Tk()
     app = FrmConsultaDNI(root, restart_login)
     root.mainloop()
+
 
 
