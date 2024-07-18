@@ -7,67 +7,52 @@ from dni_database import DniDatabase
 from fpdf import FPDF
 import openpyxl
 
-class FrmReporteDNI:
-    def __init__(self, root, restart_callback):
-        self.root = root
-        self.root.title("Reporte de asistencia de DNI")
-        self.restart_callback = restart_callback
+class CalendarWindow:
+    def __init__(self, root, callback):
+        self.root = Toplevel(root)
+        self.root.title("Seleccione el Intervalo de Fechas")
+        self.callback = callback
 
-        self.db = DniDatabase()
-
-        self.btnBuscar = Button(root, text="Buscar por Fecha", command=self.abrir_calendario)
-        self.btnBuscar.grid(row=0, column=0, columnspan=2)
-
-        self.lblRegistrosHoy = Label(root, text="Registros del Día:")
-        self.lblRegistrosHoy.grid(row=1, column=0, columnspan=2)
-
-        self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"), show='headings')
-        self.tree.heading("DNI", text="DNI")
-        self.tree.heading("Apellido Paterno", text="Apellido Paterno")
-        self.tree.heading("Apellido Materno", text="Apellido Materno")
-        self.tree.heading("Nombres", text="Nombres")
-        self.tree.heading("Fecha y Hora", text="Fecha y Hora")
-        self.tree.grid(row=2, column=0, columnspan=2)
-
-        self.btnPDF = Button(root, text="Convertir a PDF", command=self.convertir_a_pdf)
-        self.btnPDF.grid(row=3, column=0, pady=10)
-
-        self.btnExcel = Button(root, text="Convertir a Excel", command=self.convertir_a_excel)
-        self.btnExcel.grid(row=3, column=1, pady=10)
-
-        self.btnBackToLogin = Button(root, text="Cerrar sesión", command=self.volver_al_login)
-        self.btnBackToLogin.grid(row=0, column=1, columnspan=1)
-
-        self.load_today_records()
-
-    def volver_al_login(self):
-        self.root.destroy()
-        self.restart_callback()
-
-    def abrir_calendario(self):
-        self.cal_window = Toplevel(self.root)
-        self.cal_window.title("Seleccione el Intervalo de Fechas")
-
-        self.lblFechaInicio = Label(self.cal_window, text="Fecha de Inicio:")
-        self.lblFechaInicio.pack(pady=5)
-        
-        self.cal_inicio = Calendar(self.cal_window, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
+        Label(self.root, text="Fecha de Inicio:").pack(pady=5)
+        self.cal_inicio = Calendar(self.root, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
         self.cal_inicio.pack(pady=5)
 
-        self.lblFechaFin = Label(self.cal_window, text="Fecha de Fin:")
-        self.lblFechaFin.pack(pady=5)
-
-        self.cal_fin = Calendar(self.cal_window, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
+        Label(self.root, text="Fecha de Fin:").pack(pady=5)
+        self.cal_fin = Calendar(self.root, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
         self.cal_fin.pack(pady=5)
 
-        self.btnSeleccionarIntervalo = Button(self.cal_window, text="Seleccionar Intervalo", command=self.seleccionar_intervalo)
-        self.btnSeleccionarIntervalo.pack(pady=10)
+        Button(self.root, text="Seleccionar Intervalo", command=self.select_interval).pack(pady=10)
 
-    def seleccionar_intervalo(self):
+    def select_interval(self):
         fecha_inicio = self.cal_inicio.get_date()
         fecha_fin = self.cal_fin.get_date()
-        self.load_records_by_interval(fecha_inicio, fecha_fin)
-        self.cal_window.destroy()
+        self.callback(fecha_inicio, fecha_fin)
+        self.root.destroy()
+
+class ReporteDNIApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Reporte de asistencia de DNI")
+        self.db = DniDatabase()
+        
+        self.create_widgets()
+        self.load_today_records()
+
+    def create_widgets(self):
+        Button(self.root, text="Buscar por Fecha", command=self.abrir_calendario).grid(row=0, column=0, columnspan=2)
+        Label(self.root, text="Registros del Día:").grid(row=1, column=0, columnspan=2)
+        
+        self.tree = ttk.Treeview(self.root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"), show='headings')
+        for col in self.tree["columns"]:
+            self.tree.heading(col, text=col)
+        self.tree.grid(row=2, column=0, columnspan=2)
+        
+        Button(self.root, text="Convertir a PDF", command=self.convertir_a_pdf).grid(row=3, column=0, pady=10)
+        Button(self.root, text="Convertir a Excel", command=self.convertir_a_excel).grid(row=3, column=1, pady=10)
+        Button(self.root, text="Cerrar sesión", command=self.volver_al_login).grid(row=0, column=1, sticky=E)
+
+    def abrir_calendario(self):
+        CalendarWindow(self.root, self.load_records_by_interval)
 
     def load_today_records(self):
         today = datetime.now().strftime("%Y-%m-%d")
@@ -82,10 +67,10 @@ class FrmReporteDNI:
         self.update_treeview(records)
 
     def update_treeview(self, records):
-        for record in self.tree.get_children():
-            self.tree.delete(record)
+        for item in self.tree.get_children():
+            self.tree.delete(item)
         for record in records:
-            self.tree.insert("", "end", values=(record[0], record[1], record[2], record[3], record[4]))
+            self.tree.insert("", "end", values=record)
 
     def convertir_a_pdf(self):
         records = self.db.fetch_all_records()
@@ -94,7 +79,6 @@ class FrmReporteDNI:
         pdf.set_font("Arial", size=12)
 
         pdf.cell(200, 10, txt="Reporte de DNI", ln=True, align='C')
-
         headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"]
         for header in headers:
             pdf.cell(40, 10, header, border=1)
@@ -123,13 +107,14 @@ class FrmReporteDNI:
         workbook.save("reporte_dni.xlsx")
         messagebox.showinfo("Información", "El reporte se ha guardado como Excel")
 
-    def __del__(self):
-        self.db.close()
+    def volver_al_login(self):
+        self.root.destroy()
+        restart_login()
 
 if __name__ == "__main__":
     def restart_login():
         root = Tk()
-        app = FrmReporteDNI(root, restart_login)
+        app = ReporteDNIApp(root)
         root.mainloop()
 
     restart_login()
