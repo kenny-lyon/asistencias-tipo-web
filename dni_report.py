@@ -35,8 +35,8 @@ class FrmReporteDNI:
         self.btnExcel = Button(root, text="Convertir a Excel", command=self.convertir_a_excel)
         self.btnExcel.grid(row=3, column=1, pady=10)
 
-        self.btnBackToLogin = Button(root, text="Volver al Login", command=self.volver_al_login)
-        self.btnBackToLogin.grid(row=4, column=0, columnspan=2)
+        self.btnBackToLogin = Button(root, text="Cerrar sesión", command=self.volver_al_login)
+        self.btnBackToLogin.grid(row=0, column=1, columnspan=1)
 
         self.load_today_records()
 
@@ -46,22 +46,27 @@ class FrmReporteDNI:
 
     def abrir_calendario(self):
         self.cal_window = Toplevel(self.root)
-        self.cal_window.title("Seleccione la Fecha")
+        self.cal_window.title("Seleccione el Intervalo de Fechas")
 
-        today = datetime.now().strftime("%Y-%m-%d")
+        self.lblFechaInicio = Label(self.cal_window, text="Fecha de Inicio:")
+        self.lblFechaInicio.pack(pady=5)
+        
+        self.cal_inicio = Calendar(self.cal_window, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
+        self.cal_inicio.pack(pady=5)
 
-        self.cal = Calendar(self.cal_window, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
-        self.cal.pack(pady=10)
+        self.lblFechaFin = Label(self.cal_window, text="Fecha de Fin:")
+        self.lblFechaFin.pack(pady=5)
 
-        # Destacar la fecha de hoy
-        self.cal.calevent_create(datetime.now(), 'Hoy', 'today')
+        self.cal_fin = Calendar(self.cal_window, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
+        self.cal_fin.pack(pady=5)
 
-        self.btnSeleccionar = Button(self.cal_window, text="Seleccionar Fecha", command=self.seleccionar_fecha)
-        self.btnSeleccionar.pack(pady=10)
+        self.btnSeleccionarIntervalo = Button(self.cal_window, text="Seleccionar Intervalo", command=self.seleccionar_intervalo)
+        self.btnSeleccionarIntervalo.pack(pady=10)
 
-    def seleccionar_fecha(self):
-        date = self.cal.get_date()
-        self.load_records_by_date(date)
+    def seleccionar_intervalo(self):
+        fecha_inicio = self.cal_inicio.get_date()
+        fecha_fin = self.cal_fin.get_date()
+        self.load_records_by_interval(fecha_inicio, fecha_fin)
         self.cal_window.destroy()
 
     def load_today_records(self):
@@ -70,6 +75,13 @@ class FrmReporteDNI:
 
     def load_records_by_date(self, date):
         records = self.db.fetch_records_by_date(date)
+        self.update_treeview(records)
+
+    def load_records_by_interval(self, fecha_inicio, fecha_fin):
+        records = self.db.fetch_records_by_interval(fecha_inicio, fecha_fin)
+        self.update_treeview(records)
+
+    def update_treeview(self, records):
         for record in self.tree.get_children():
             self.tree.delete(record)
         for record in records:
@@ -83,13 +95,11 @@ class FrmReporteDNI:
 
         pdf.cell(200, 10, txt="Reporte de DNI", ln=True, align='C')
 
-        # Headers
         headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"]
         for header in headers:
             pdf.cell(40, 10, header, border=1)
         pdf.ln()
 
-        # Data rows
         for record in records:
             for item in record[1:]:
                 pdf.cell(40, 10, str(item), border=1)
@@ -104,11 +114,9 @@ class FrmReporteDNI:
         sheet = workbook.active
         sheet.title = "Reporte de DNI"
 
-        # Headers
         headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"]
         sheet.append(headers)
 
-        # Data rows
         for record in records:
             sheet.append(record[1:])
 
@@ -117,4 +125,15 @@ class FrmReporteDNI:
 
     def __del__(self):
         self.db.close()
+
+if __name__ == "__main__":
+    def restart_login():
+        root = Tk()
+        app = FrmReporteDNI(root, restart_login)
+        root.mainloop()
+
+    root = Tk()
+    app = FrmReporteDNI(root, restart_login)
+    root.mainloop()
+
 
