@@ -20,6 +20,7 @@ class FrmConsultaDNI:
         
         self.txtNumeroDNI = Entry(root)
         self.txtNumeroDNI.grid(row=0, column=1)
+        self.txtNumeroDNI.bind('<Return>', self.consultar_dni_event)  # Bind Enter key to consultar_dni_event
 
         self.btnConsultar = Button(root, text="Consultar DNI", command=self.consultar_dni)
         self.btnConsultar.grid(row=1, column=0, columnspan=2)
@@ -40,7 +41,7 @@ class FrmConsultaDNI:
         self.txtNombres.grid(row=4, column=1)
 
         self.btnGuardar = Button(root, text="Guardar", command=self.guardar_dni)
-        self.btnGuardar.grid(row=3, column=0, columnspan=2)
+        self.btnGuardar.grid(row=5, column=0, columnspan=2)
 
         self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"), show='headings')
         self.tree.heading("DNI", text="DNI")
@@ -54,7 +55,7 @@ class FrmConsultaDNI:
         self.lblMensaje.grid(row=7, column=0, columnspan=2)
 
         self.btnExit = Button(root, text="REGRESAR", command=self.salir)
-        self.btnExit.grid(row=7, column=0, columnspan=2)
+        self.btnExit.grid(row=8, column=0, columnspan=2)
 
     def extraer_contenido_entre_nombre(self, cadena, nombre_inicio, nombre_fin):
         inicio = cadena.find(nombre_inicio)
@@ -64,6 +65,9 @@ class FrmConsultaDNI:
             if fin != -1:
                 return cadena[inicio:fin]
         return ""
+
+    def consultar_dni_event(self, event):  # Event handler for Enter key
+        self.consultar_dni()
 
     def consultar_dni(self):
         self.txtApellidoPaterno.delete(0, END)
@@ -158,7 +162,7 @@ class FrmConsultaDNI:
         nombres = self.txtNombres.get()
         fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        if not (numero_dni and apellido_paterno and apellido_materno and nombres):
+        if not (numero_dni and apellido_paterno, apellido_materno and nombres):
             messagebox.showerror("Error", "Todos los campos deben estar llenos")
             return
         
