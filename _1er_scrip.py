@@ -85,6 +85,9 @@ class FrmConsultaDNI:
 
         self.btnExit.grid(row=8, column=0, columnspan=2, pady=10)
 
+        self.btnExit = Button(root, text="Salir", command=self.salir)
+        self.btnExit.grid(row=8, column=0, columnspan=2)
+
     def extraer_contenido_entre_nombre(self, cadena, nombre_inicio, nombre_fin):
         inicio = cadena.find(nombre_inicio)
         if inicio != -1:
@@ -246,6 +249,10 @@ class FrmConsultaDNI:
         self.root.destroy()
         self.restart_callback()
 
+    def salir(self):
+        self.root.destroy()
+        self.restart_callback()
+
     def __del__(self):
         self.db.close()
 
@@ -258,4 +265,5 @@ if __name__ == "__main__":
     root = Tk()
     app = FrmConsultaDNI(root, restart_login)
     root.mainloop()
+
 
