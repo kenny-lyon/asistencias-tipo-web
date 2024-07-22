@@ -15,33 +15,49 @@ class FrmConsultaDNI:
 
         self.db = DniDatabase()
 
-        self.lblNumeroDNI = Label(root, text="Número DNI:")
-        self.lblNumeroDNI.grid(row=0, column=0)
-        
-        self.txtNumeroDNI = Entry(root)
-        self.txtNumeroDNI.grid(row=0, column=1)
+        # Configure styles
+        style = ttk.Style()
+        style.configure('TButton', background='#4CAF50', foreground='black', font=('Arial', 10, 'bold'))
+        style.configure('TLabel', background='#FFC107', font=('Arial', 12, 'bold'))
+        style.configure('Treeview', background='#F1F8E9', foreground='#333', font=('Arial', 10))
+        style.configure('Treeview.Heading', background='#4CAF50', foreground='black', font=('Arial', 11, 'bold'))
+        style.configure('TEntry', foreground='#333', font=('Arial', 10))
 
-        self.btnConsultar = Button(root, text="Consultar DNI", command=self.consultar_dni)
-        self.btnConsultar.grid(row=1, column=0, columnspan=2)
-        
-        self.lblApellidoPaterno = Label(root, text="Apellido Paterno:")
-        self.lblApellidoPaterno.grid(row=2, column=0)
-        self.txtApellidoPaterno = Entry(root)
-        self.txtApellidoPaterno.grid(row=2, column=1)
-        
-        self.lblApellidoMaterno = Label(root, text="Apellido Materno:")
-        self.lblApellidoMaterno.grid(row=3, column=0)
-        self.txtApellidoMaterno = Entry(root)
-        self.txtApellidoMaterno.grid(row=3, column=1)
-        
-        self.lblNombres = Label(root, text="Nombres:")
-        self.lblNombres.grid(row=4, column=0)
-        self.txtNombres = Entry(root)
-        self.txtNombres.grid(row=4, column=1)
+        # Background color
+        root.configure(bg='#FFEB3B')
 
-        self.btnGuardar = Button(root, text="Guardar", command=self.abrir_ventana_guardar)
-        self.btnGuardar.grid(row=5, column=0, columnspan=2)
+        # Labels and Entry Fields
+        self.lblNumeroDNI = Label(root, text="Número DNI:", bg='#FFEB3B')
+        self.lblNumeroDNI.grid(row=0, column=0, pady=5, padx=10, sticky=W)
+        
+        self.txtNumeroDNI = ttk.Entry(root, font=('Arial', 10))
+        self.txtNumeroDNI.grid(row=0, column=1, pady=5, padx=10)
 
+        self.btnConsultar = ttk.Button(root, text="Consultar DNI", command=self.consultar_dni, style='TButton')
+        self.btnConsultar.grid(row=1, column=0, columnspan=2, pady=10)
+
+        self.lblApellidoPaterno = Label(root, text="Apellido Paterno:", bg='#FFEB3B')
+        self.lblApellidoPaterno.grid(row=2, column=0, pady=5, padx=10, sticky=W)
+        self.txtApellidoPaterno = ttk.Entry(root, font=('Arial', 10))
+        self.txtApellidoPaterno.grid(row=2, column=1, pady=5, padx=10)
+
+        self.lblApellidoMaterno = Label(root, text="Apellido Materno:", bg='#FFEB3B')
+        self.lblApellidoMaterno.grid(row=3, column=0, pady=5, padx=10, sticky=W)
+        self.txtApellidoMaterno = ttk.Entry(root, font=('Arial', 10))
+        self.txtApellidoMaterno.grid(row=3, column=1, pady=5, padx=10)
+
+        self.lblNombres = Label(root, text="Nombres:", bg='#FFEB3B')
+        self.lblNombres.grid(row=4, column=0, pady=5, padx=10, sticky=W)
+        self.txtNombres = ttk.Entry(root, font=('Arial', 10))
+        self.txtNombres.grid(row=4, column=1, pady=5, padx=10)
+
+        self.btnIngreso = ttk.Button(root, text="Registrar Ingreso", command=lambda: self.registrar_horario("ingreso"), style='TButton')
+        self.btnIngreso.grid(row=5, column=0, pady=10)
+
+        self.btnSalida = ttk.Button(root, text="Registrar Salida", command=lambda: self.registrar_horario("salida"), style='TButton')
+        self.btnSalida.grid(row=5, column=1, pady=10)
+
+        # Treeview
         self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora de Ingreso", "Fecha y Hora de Salida"), show='headings')
         self.tree.heading("DNI", text="DNI")
         self.tree.heading("Apellido Paterno", text="Apellido Paterno")
@@ -49,10 +65,11 @@ class FrmConsultaDNI:
         self.tree.heading("Nombres", text="Nombres")
         self.tree.heading("Fecha y Hora de Ingreso", text="Fecha y Hora de Ingreso")
         self.tree.heading("Fecha y Hora de Salida", text="Fecha y Hora de Salida")
-        self.tree.grid(row=6, column=0, columnspan=2)
+        self.tree.grid(row=6, column=0, columnspan=2, pady=10, padx=10)
 
-        self.lblMensaje = Label(root, text="")
-        self.lblMensaje.grid(row=7, column=0, columnspan=2)
+        # Status message
+        self.lblMensaje = Label(root, text="", bg='#FFEB3B')
+        self.lblMensaje.grid(row=7, column=0, columnspan=2, pady=10)
 
     def extraer_contenido_entre_nombre(self, cadena, nombre_inicio, nombre_fin):
         inicio = cadena.find(nombre_inicio)
@@ -146,17 +163,7 @@ class FrmConsultaDNI:
             self.tree.delete(item)
         self.tree.insert("", "end", values=(dni, apellido_paterno, apellido_materno, nombres, fecha_hora_ingreso, fecha_hora_salida))
 
-    def abrir_ventana_guardar(self):
-        ventana = Toplevel(self.root)
-        ventana.title("Registrar Horario")
-        
-        btnIngreso = Button(ventana, text="Registrar horario de Ingreso", command=lambda: self.registrar_horario("ingreso", ventana))
-        btnIngreso.grid(row=0, column=0, padx=20, pady=20)
-
-        btnSalida = Button(ventana, text="Registrar horario de Salida", command=lambda: self.registrar_horario("salida", ventana))
-        btnSalida.grid(row=0, column=1, padx=20, pady=20)
-
-    def registrar_horario(self, tipo, ventana):
+    def registrar_horario(self, tipo):
         numero_dni = self.txtNumeroDNI.get()
         apellido_paterno = self.txtApellidoPaterno.get()
         apellido_materno = self.txtApellidoMaterno.get()
@@ -167,7 +174,6 @@ class FrmConsultaDNI:
             messagebox.showerror("Error", "Todos los campos deben estar llenos")
             return
         
-        # Verificar duplicados para ingreso
         if tipo == "ingreso":
             if self.db.insert_record(numero_dni, apellido_paterno, apellido_materno, nombres, fecha_hora, ""):
                 self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, fecha_hora, "")
@@ -175,7 +181,6 @@ class FrmConsultaDNI:
             else:
                 messagebox.showwarning("Guardar DNI", "Ya existe un registro con este DNI en la fecha actual para ingreso")
         
-        # Verificar duplicados para salida
         elif tipo == "salida":
             if self.db.update_record_salida(numero_dni, fecha_hora):
                 self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, "", fecha_hora)
@@ -183,12 +188,12 @@ class FrmConsultaDNI:
             else:
                 messagebox.showwarning("Guardar DNI", "Ya existe un registro de salida para este DNI en la fecha actual")
         
-        # Cerrar la ventana después de guardar
-        ventana.destroy()
-
-        # Reiniciar sesión
-        self.root.destroy()
-        self.restart_callback()
+        # Limpiar barra de texto y otros campos
+        self.txtNumeroDNI.delete(0, END)
+        self.txtApellidoPaterno.delete(0, END)
+        self.txtApellidoMaterno.delete(0, END)
+        self.txtNombres.delete(0, END)
+        self.txtNumeroDNI.focus()
 
     def __del__(self):
         self.db.close()
@@ -197,3 +202,4 @@ if __name__ == "__main__":
     root = Tk()
     app = FrmConsultaDNI(root, None)
     root.mainloop()
+
