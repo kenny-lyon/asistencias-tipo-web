@@ -32,6 +32,7 @@ class FrmConsultaDNI:
         
         self.txtNumeroDNI = ttk.Entry(root, font=('Arial', 10))
         self.txtNumeroDNI.grid(row=0, column=0,columnspan=2, pady=5, padx=10)
+        self.txtNumeroDNI.bind("<Return>", lambda event: self.consultar_dni())
 
         self.btnConsultar = ttk.Button(root, text="Consultar DNI", command=self.consultar_dni, style='TButton')
         self.btnConsultar.grid(row=1, column=0, columnspan=2, pady=10)
@@ -51,11 +52,15 @@ class FrmConsultaDNI:
         self.txtNombres = ttk.Entry(root, font=('Arial', 10))
         self.txtNombres.grid(row=4, column=0,columnspan=2, pady=5, padx=10)
 
-        self.btnIngreso = ttk.Button(root, text="Registrar Ingreso", command=lambda: self.registrar_horario("ingreso"), style='TButton')
+        self.btnIngreso = ttk.Button(root, text="Registrar Ingreso", style='TButton')
         self.btnIngreso.grid(row=5, column=0, pady=10)
+        self.btnIngreso.bind('<ButtonPress-1>', lambda event: self.start_time("ingreso"))
+        self.btnIngreso.bind('<ButtonRelease-1>', lambda event: self.registrar_horario("ingreso"))
 
-        self.btnSalida = ttk.Button(root, text="Registrar Salida", command=lambda: self.registrar_horario("salida"), style='TButton')
+        self.btnSalida = ttk.Button(root, text="Registrar Salida", style='TButton')
         self.btnSalida.grid(row=5, column=1, pady=10)
+        self.btnSalida.bind('<ButtonPress-1>', lambda event: self.start_time("salida"))
+        self.btnSalida.bind('<ButtonRelease-1>', lambda event: self.registrar_horario("salida"))
 
         # Treeview
         self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora de Ingreso", "Fecha y Hora de Salida"), show='headings')
@@ -70,6 +75,10 @@ class FrmConsultaDNI:
         # Status message
         self.lblMensaje = Label(root, text="", bg='#5fe891')
         self.lblMensaje.grid(row=7, column=0, columnspan=2, pady=10)
+
+        # Botón para regresar al login principal
+        self.btnRegresar = ttk.Button(root, text="Regresar al Login", command=self.regresar_al_login, style='TButton')
+        self.btnRegresar.grid(row=8, column=0, columnspan=2, pady=10)
 
     def extraer_contenido_entre_nombre(self, cadena, nombre_inicio, nombre_fin):
         inicio = cadena.find(nombre_inicio)
@@ -158,6 +167,9 @@ class FrmConsultaDNI:
         else:
             messagebox.showinfo("Consultar DNI", mensaje_respuesta)
 
+    def start_time(self, tipo):
+        self.fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     def agregar_a_tabla(self, dni, apellido_paterno, apellido_materno, nombres, fecha_hora_ingreso, fecha_hora_salida):
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -168,22 +180,21 @@ class FrmConsultaDNI:
         apellido_paterno = self.txtApellidoPaterno.get()
         apellido_materno = self.txtApellidoMaterno.get()
         nombres = self.txtNombres.get()
-        fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         if not (numero_dni and apellido_paterno and apellido_materno and nombres):
             messagebox.showerror("Error", "Todos los campos deben estar llenos")
             return
         
         if tipo == "ingreso":
-            if self.db.insert_record(numero_dni, apellido_paterno, apellido_materno, nombres, fecha_hora, ""):
-                self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, fecha_hora, "")
+            if self.db.insert_record(numero_dni, apellido_paterno, apellido_materno, nombres, self.fecha_hora, ""):
+                self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, self.fecha_hora, "")
                 messagebox.showinfo("Guardar DNI", "Se registró su asistencia satisfactoriamente")
             else:
                 messagebox.showwarning("Guardar DNI", "Ya existe un registro con este DNI en la fecha actual para ingreso")
         
         elif tipo == "salida":
-            if self.db.update_record_salida(numero_dni, fecha_hora):
-                self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, "", fecha_hora)
+            if self.db.update_record_salida(numero_dni, self.fecha_hora):
+                self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, "", self.fecha_hora)
                 messagebox.showinfo("Guardar DNI", "Se registró su salida satisfactoriamente")
             else:
                 messagebox.showwarning("Guardar DNI", "Ya existe un registro de salida para este DNI en la fecha actual")
@@ -195,11 +206,20 @@ class FrmConsultaDNI:
         self.txtNombres.delete(0, END)
         self.txtNumeroDNI.focus()
 
+    def regresar_al_login(self):
+        self.root.destroy()
+        self.restart_callback()
+
     def __del__(self):
         self.db.close()
 
 if __name__ == "__main__":
+    def restart_app():
+        root = Tk()
+        app = FrmConsultaDNI(root, restart_app)
+        root.mainloop()
+
     root = Tk()
-    app = FrmConsultaDNI(root, None)
+    app = FrmConsultaDNI(root, restart_app)
     root.mainloop()
 
