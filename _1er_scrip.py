@@ -24,32 +24,32 @@ class FrmConsultaDNI:
         style.configure('TEntry', foreground='#333', font=('Arial', 10))
 
         # Background color
-        root.configure(bg='#FFEB3B')
+        root.configure(bg='#748279')
 
         # Labels and Entry Fields
-        self.lblNumeroDNI = Label(root, text="Número DNI:", bg='#FFEB3B')
+        self.lblNumeroDNI = Label(root, text="Número DNI:", bg='#e6ede9')
         self.lblNumeroDNI.grid(row=0, column=0, pady=5, padx=10, sticky=W)
         
         self.txtNumeroDNI = ttk.Entry(root, font=('Arial', 10))
-        self.txtNumeroDNI.grid(row=0, column=1, pady=5, padx=10)
+        self.txtNumeroDNI.grid(row=0, column=0,columnspan=2, pady=5, padx=10)
 
         self.btnConsultar = ttk.Button(root, text="Consultar DNI", command=self.consultar_dni, style='TButton')
         self.btnConsultar.grid(row=1, column=0, columnspan=2, pady=10)
 
-        self.lblApellidoPaterno = Label(root, text="Apellido Paterno:", bg='#FFEB3B')
-        self.lblApellidoPaterno.grid(row=2, column=0, pady=5, padx=10, sticky=W)
+        self.lblApellidoPaterno = Label(root, text="Apellido Paterno:", bg='#e6ede9')
+        self.lblApellidoPaterno.grid(row=2, column=0,columnspan=2, pady=5, padx=10, sticky=W)
         self.txtApellidoPaterno = ttk.Entry(root, font=('Arial', 10))
-        self.txtApellidoPaterno.grid(row=2, column=1, pady=5, padx=10)
+        self.txtApellidoPaterno.grid(row=2, column=0,columnspan=2, pady=5, padx=10)
 
-        self.lblApellidoMaterno = Label(root, text="Apellido Materno:", bg='#FFEB3B')
-        self.lblApellidoMaterno.grid(row=3, column=0, pady=5, padx=10, sticky=W)
+        self.lblApellidoMaterno = Label(root, text="Apellido Materno:", bg='#e6ede9')
+        self.lblApellidoMaterno.grid(row=3, column=0,columnspan=2, pady=5, padx=10, sticky=W)
         self.txtApellidoMaterno = ttk.Entry(root, font=('Arial', 10))
-        self.txtApellidoMaterno.grid(row=3, column=1, pady=5, padx=10)
+        self.txtApellidoMaterno.grid(row=3, column=0,columnspan=2, pady=5, padx=10)
 
-        self.lblNombres = Label(root, text="Nombres:", bg='#FFEB3B')
-        self.lblNombres.grid(row=4, column=0, pady=5, padx=10, sticky=W)
+        self.lblNombres = Label(root, text="Nombres:", bg='#e6ede9')
+        self.lblNombres.grid(row=4, column=0,columnspan=2, pady=5, padx=10, sticky=W)
         self.txtNombres = ttk.Entry(root, font=('Arial', 10))
-        self.txtNombres.grid(row=4, column=1, pady=5, padx=10)
+        self.txtNombres.grid(row=4, column=0,columnspan=2, pady=5, padx=10)
 
         self.btnIngreso = ttk.Button(root, text="Registrar Ingreso", command=lambda: self.registrar_horario("ingreso"), style='TButton')
         self.btnIngreso.grid(row=5, column=0, pady=10)
@@ -68,7 +68,7 @@ class FrmConsultaDNI:
         self.tree.grid(row=6, column=0, columnspan=2, pady=10, padx=10)
 
         # Status message
-        self.lblMensaje = Label(root, text="", bg='#FFEB3B')
+        self.lblMensaje = Label(root, text="", bg='#5fe891')
         self.lblMensaje.grid(row=7, column=0, columnspan=2, pady=10)
 
     def extraer_contenido_entre_nombre(self, cadena, nombre_inicio, nombre_fin):
