@@ -12,7 +12,7 @@ class Login:
         self.root.configure(bg="#2C3E50")  # Fondo azul oscuro
 
         # Cargar y mostrar la imagen
-        self.img = Image.open("C:/Users/yuliana/OneDrive/Escritorio/DNI registro/Estadistica Informatica.png")
+        self.img = Image.open("C:/Users/KENNY/Downloads/Estadistica Informatica.png")
         self.img = self.img.resize((200, 200), Image.LANCZOS)
         self.photo = ImageTk.PhotoImage(self.img)
         self.lblImage = Label(root, image=self.photo, bg="#2C3E50")
@@ -85,7 +85,7 @@ class Login:
         username = self.entryAdminUser.get()
         password = self.entryAdminPassword.get()
 
-        if username == "admin" and password == "1234":
+        if username == "76645011" and password == "12345":
             self.admin_login_window.destroy()
             self.root.destroy()
             admin_root = Tk()
@@ -103,4 +103,3 @@ if __name__ == "__main__":
     root = Tk()
     app = Login(root)
     root.mainloop()
-
