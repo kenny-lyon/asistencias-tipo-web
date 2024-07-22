@@ -21,12 +21,13 @@ class FrmReporteDNI:
         self.lblRegistrosHoy = Label(root, text="Registros del Día:")
         self.lblRegistrosHoy.grid(row=1, column=0, columnspan=2)
 
-        self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"), show='headings')
+        self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora de Ingreso", "Fecha y Hora de Salida"), show='headings')
         self.tree.heading("DNI", text="DNI")
         self.tree.heading("Apellido Paterno", text="Apellido Paterno")
         self.tree.heading("Apellido Materno", text="Apellido Materno")
         self.tree.heading("Nombres", text="Nombres")
-        self.tree.heading("Fecha y Hora", text="Fecha y Hora")
+        self.tree.heading("Fecha y Hora de Ingreso", text="Fecha y Hora de Ingreso")
+        self.tree.heading("Fecha y Hora de Salida", text="Fecha y Hora de Salida")
         self.tree.grid(row=2, column=0, columnspan=2)
 
         self.btnPDF = Button(root, text="Convertir a PDF", command=self.convertir_a_pdf)
@@ -37,6 +38,9 @@ class FrmReporteDNI:
 
         self.btnBackToLogin = Button(root, text="Cerrar sesión", command=self.volver_al_login)
         self.btnBackToLogin.grid(row=0, column=1, columnspan=1)
+
+        self.btnRegistroAsistencia = Button(root, text="Registro de Asistencia", command=self.ir_a_registro_asistencia)
+        self.btnRegistroAsistencia.grid(row=4, column=0, columnspan=2, pady=10)
 
         self.load_today_records()
 
@@ -82,17 +86,10 @@ class FrmReporteDNI:
         self.update_treeview(records)
 
     def update_treeview(self, records):
-        # Imprimir los registros para depurar
-        for record in records:
-            print(record)
-        
-        # Limpiar el Treeview antes de insertar nuevos datos
         for record in self.tree.get_children():
             self.tree.delete(record)
-        
-        # Insertar nuevos registros en el Treeview
         for record in records:
-            self.tree.insert("", "end", values=(record[0], record[1], record[2], record[3], record[4]))
+            self.tree.insert("", "end", values=(record[1], record[2], record[3], record[4], record[5], record[6]))
 
     def convertir_a_pdf(self):
         records = self.db.fetch_all_records()
@@ -102,7 +99,7 @@ class FrmReporteDNI:
 
         pdf.cell(200, 10, txt="Reporte de DNI", ln=True, align='C')
 
-        headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"]
+        headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora de Ingreso", "Fecha y Hora de Salida"]
         for header in headers:
             pdf.cell(40, 10, header, border=1)
         pdf.ln()
@@ -121,7 +118,7 @@ class FrmReporteDNI:
         sheet = workbook.active
         sheet.title = "Reporte de DNI"
 
-        headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora"]
+        headers = ["DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora de Ingreso", "Fecha y Hora de Salida"]
         sheet.append(headers)
 
         for record in records:
@@ -129,6 +126,10 @@ class FrmReporteDNI:
 
         workbook.save("reporte_dni.xlsx")
         messagebox.showinfo("Información", "El reporte se ha guardado como Excel")
+
+    def ir_a_registro_asistencia(self):
+        self.root.destroy()
+        import registro_asistencia  # Asegúrate de que el archivo `registro_asistencia.py` esté en el mismo directorio
 
     def __del__(self):
         self.db.close()
