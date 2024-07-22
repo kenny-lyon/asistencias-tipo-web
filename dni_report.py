@@ -12,15 +12,37 @@ class FrmReporteDNI:
     def __init__(self, root, restart_callback):
         self.root = root
         self.root.title("Reporte de asistencia de DNI")
+        self.root.configure(bg="#f0f0f0")
         self.restart_callback = restart_callback
 
         self.db = DniDatabase()
 
-        self.btnBuscar = Button(root, text="Buscar por Fecha", command=self.abrir_calendario)
-        self.btnBuscar.grid(row=0, column=0, columnspan=2)
+        # Configurar estilo
+        style = ttk.Style()
+        style.theme_use("clam")
+        
+        # Estilo para Treeview
+        style.configure("Treeview", 
+                        background="#d9d9d9",
+                        foreground="black",
+                        rowheight=25,
+                        fieldbackground="#d9d9d9")
+        style.map('Treeview', 
+                  background=[('selected', '#347083')])
 
-        self.lblRegistrosHoy = Label(root, text="Registros del Día:")
-        self.lblRegistrosHoy.grid(row=1, column=0, columnspan=2)
+        # Estilo para los botones
+        style.configure('TButton', 
+                        background='#5f9ea0', 
+                        foreground='white', 
+                        font=('Arial', 10, 'bold'))
+        style.map('TButton', 
+                  background=[('active', '#4f8e90')])
+
+        self.btnBuscar = ttk.Button(root, text="Buscar por Fecha", command=self.abrir_calendario)
+        self.btnBuscar.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
+
+        self.lblRegistrosHoy = Label(root, text="Registros del Día:", bg="#f0f0f0", font=('Arial', 12, 'bold'))
+        self.lblRegistrosHoy.grid(row=1, column=0, columnspan=2, pady=5)
 
         self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora de Ingreso", "Fecha y Hora de Salida"), show='headings')
         self.tree.heading("DNI", text="DNI")
@@ -29,19 +51,19 @@ class FrmReporteDNI:
         self.tree.heading("Nombres", text="Nombres")
         self.tree.heading("Fecha y Hora de Ingreso", text="Fecha y Hora de Ingreso")
         self.tree.heading("Fecha y Hora de Salida", text="Fecha y Hora de Salida")
-        self.tree.grid(row=2, column=0, columnspan=2)
+        self.tree.grid(row=2, column=0, columnspan=2, pady=10, padx=10)
 
-        self.btnPDF = Button(root, text="Convertir a PDF", command=self.convertir_a_pdf)
-        self.btnPDF.grid(row=3, column=0, pady=10)
+        self.btnPDF = ttk.Button(root, text="Convertir a PDF", command=self.convertir_a_pdf)
+        self.btnPDF.grid(row=3, column=0, pady=10, padx=10, sticky='ew')
 
-        self.btnExcel = Button(root, text="Convertir a Excel", command=self.convertir_a_excel)
-        self.btnExcel.grid(row=3, column=1, pady=10)
+        self.btnExcel = ttk.Button(root, text="Convertir a Excel", command=self.convertir_a_excel)
+        self.btnExcel.grid(row=3, column=1, pady=10, padx=10, sticky='ew')
 
-        self.btnBackToLogin = Button(root, text="Cerrar sesión", command=self.volver_al_login)
-        self.btnBackToLogin.grid(row=0, column=1, columnspan=1)
+        self.btnBackToLogin = ttk.Button(root, text="Cerrar sesión", command=self.volver_al_login)
+        self.btnBackToLogin.grid(row=0, column=1, columnspan=1, pady=10, padx=10, sticky='e')
 
-        self.btnRegistroAsistencia = Button(root, text="Reporte Mensual", command=self.ir_a_registro_asistencia)
-        self.btnRegistroAsistencia.grid(row=4, column=0, columnspan=2, pady=10)
+        self.btnRegistroAsistencia = ttk.Button(root, text="Reporte Mensual", command=self.ir_a_registro_asistencia)
+        self.btnRegistroAsistencia.grid(row=4, column=0, columnspan=2, pady=10, padx=10, sticky='ew')
 
         self.load_today_records()
 
@@ -52,20 +74,22 @@ class FrmReporteDNI:
     def abrir_calendario(self):
         self.cal_window = Toplevel(self.root)
         self.cal_window.title("Seleccione el Intervalo de Fechas")
+        self.cal_window.geometry("400x300")
+        self.cal_window.configure(bg="#f0f0f0")
 
-        self.lblFechaInicio = Label(self.cal_window, text="Fecha de Inicio:")
+        self.lblFechaInicio = Label(self.cal_window, text="Fecha de Inicio:", bg="#f0f0f0", font=('Arial', 10, 'bold'))
         self.lblFechaInicio.pack(pady=5)
         
         self.cal_inicio = Calendar(self.cal_window, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
         self.cal_inicio.pack(pady=5)
 
-        self.lblFechaFin = Label(self.cal_window, text="Fecha de Fin:")
+        self.lblFechaFin = Label(self.cal_window, text="Fecha de Fin:", bg="#f0f0f0", font=('Arial', 10, 'bold'))
         self.lblFechaFin.pack(pady=5)
 
         self.cal_fin = Calendar(self.cal_window, selectmode='day', date_pattern='yyyy-mm-dd', mindate=datetime(2020, 1, 1), maxdate=datetime(2025, 12, 31))
         self.cal_fin.pack(pady=5)
 
-        self.btnSeleccionarIntervalo = Button(self.cal_window, text="Seleccionar Intervalo", command=self.seleccionar_intervalo)
+        self.btnSeleccionarIntervalo = ttk.Button(self.cal_window, text="Seleccionar Intervalo", command=self.seleccionar_intervalo)
         self.btnSeleccionarIntervalo.pack(pady=10)
 
     def seleccionar_intervalo(self):
@@ -140,6 +164,10 @@ if __name__ == "__main__":
         root = Tk()
         app = FrmReporteDNI(root, restart_login)
         root.mainloop()
+
+    root = Tk()
+    app = FrmReporteDNI(root, restart_login)
+    root.mainloop()
 
     root = Tk()
     app = FrmReporteDNI(root, restart_login)
