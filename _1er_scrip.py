@@ -1,225 +1,177 @@
 import requests
 from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
+from datetime import datetime
 import time
 import re
-from datetime import datetime
 from dni_database import DniDatabase
 
-class FrmConsultaDNI:
-    def __init__(self, root, restart_callback):
+class AttendanceManager:
+    def __init__(self, root):
         self.root = root
-        self.root.title("Registro de Asistencia")
-        self.restart_callback = restart_callback
-
+        self.root.title("Attendance Manager")
         self.db = DniDatabase()
 
-        # Configure styles
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.root.configure(bg='#CCCCCC')
+
+        # Styles
         style = ttk.Style()
-        style.configure('TButton', background='#4CAF50', foreground='black', font=('Arial', 10, 'bold'))
+        style.configure('TButton', background='#28A745', foreground='white', font=('Arial', 10, 'bold'))
         style.configure('TLabel', background='#FFC107', font=('Arial', 12, 'bold'))
-        style.configure('Treeview', background='#F1F8E9', foreground='#333', font=('Arial', 10))
-        style.configure('Treeview.Heading', background='#4CAF50', foreground='black', font=('Arial', 11, 'bold'))
-        style.configure('TEntry', foreground='#333', font=('Arial', 10))
+        style.configure('Treeview', background='#E6E6E6', foreground='#000000', font=('Arial', 10))
+        style.configure('Treeview.Heading', background='#28A745', foreground='white', font=('Arial', 11, 'bold'))
 
-        # Background color
-        root.configure(bg='#748279')
+        # DNI input
+        ttk.Label(self.root, text="DNI:").grid(row=0, column=0, padx=10, pady=10, sticky=W)
+        self.dni_entry = ttk.Entry(self.root, font=('Arial', 10))
+        self.dni_entry.grid(row=0, column=1, padx=10, pady=10, sticky=W)
 
-        # Labels and Entry Fields
-        self.lblNumeroDNI = Label(root, text="Número DNI:", bg='#e6ede9')
-        self.lblNumeroDNI.grid(row=0, column=0, pady=5, padx=10, sticky=W)
-        
-        self.txtNumeroDNI = ttk.Entry(root, font=('Arial', 10))
-        self.txtNumeroDNI.grid(row=0, column=0,columnspan=2, pady=5, padx=10)
-        self.txtNumeroDNI.bind("<Return>", lambda event: self.consultar_dni())
+        self.search_button = ttk.Button(self.root, text="Search DNI", command=self.search_dni)
+        self.search_button.grid(row=0, column=2, padx=10, pady=10)
 
-        self.btnConsultar = ttk.Button(root, text="Consultar DNI", command=self.consultar_dni, style='TButton')
-        self.btnConsultar.grid(row=1, column=0, columnspan=2, pady=10)
+        # User details
+        ttk.Label(self.root, text="First Name:").grid(row=1, column=0, padx=10, pady=10, sticky=W)
+        self.first_name_entry = ttk.Entry(self.root, font=('Arial', 10))
+        self.first_name_entry.grid(row=1, column=1, padx=10, pady=10, sticky=W)
 
-        self.lblApellidoPaterno = Label(root, text="Apellido Paterno:", bg='#e6ede9')
-        self.lblApellidoPaterno.grid(row=2, column=0,columnspan=2, pady=5, padx=10, sticky=W)
-        self.txtApellidoPaterno = ttk.Entry(root, font=('Arial', 10))
-        self.txtApellidoPaterno.grid(row=2, column=0,columnspan=2, pady=5, padx=10)
+        ttk.Label(self.root, text="Last Name:").grid(row=2, column=0, padx=10, pady=10, sticky=W)
+        self.last_name_entry = ttk.Entry(self.root, font=('Arial', 10))
+        self.last_name_entry.grid(row=2, column=1, padx=10, pady=10, sticky=W)
 
-        self.lblApellidoMaterno = Label(root, text="Apellido Materno:", bg='#e6ede9')
-        self.lblApellidoMaterno.grid(row=3, column=0,columnspan=2, pady=5, padx=10, sticky=W)
-        self.txtApellidoMaterno = ttk.Entry(root, font=('Arial', 10))
-        self.txtApellidoMaterno.grid(row=3, column=0,columnspan=2, pady=5, padx=10)
+        ttk.Label(self.root, text="Middle Name:").grid(row=3, column=0, padx=10, pady=10, sticky=W)
+        self.middle_name_entry = ttk.Entry(self.root, font=('Arial', 10))
+        self.middle_name_entry.grid(row=3, column=1, padx=10, pady=10, sticky=W)
 
-        self.lblNombres = Label(root, text="Nombres:", bg='#e6ede9')
-        self.lblNombres.grid(row=4, column=0,columnspan=2, pady=5, padx=10, sticky=W)
-        self.txtNombres = ttk.Entry(root, font=('Arial', 10))
-        self.txtNombres.grid(row=4, column=0,columnspan=2, pady=5, padx=10)
+        # Register buttons
+        self.register_entry_button = ttk.Button(self.root, text="Register Entry", command=lambda: self.register_attendance("entry"))
+        self.register_entry_button.grid(row=4, column=0, padx=10, pady=10)
 
-        self.btnIngreso = ttk.Button(root, text="Registrar Ingreso", style='TButton')
-        self.btnIngreso.grid(row=5, column=0, pady=10)
-        self.btnIngreso.bind('<ButtonPress-1>', lambda event: self.start_time("ingreso"))
-        self.btnIngreso.bind('<ButtonRelease-1>', lambda event: self.registrar_horario("ingreso"))
+        self.register_exit_button = ttk.Button(self.root, text="Register Exit", command=lambda: self.register_attendance("exit"))
+        self.register_exit_button.grid(row=4, column=1, padx=10, pady=10)
 
-        self.btnSalida = ttk.Button(root, text="Registrar Salida", style='TButton')
-        self.btnSalida.grid(row=5, column=1, pady=10)
-        self.btnSalida.bind('<ButtonPress-1>', lambda event: self.start_time("salida"))
-        self.btnSalida.bind('<ButtonRelease-1>', lambda event: self.registrar_horario("salida"))
+        # Attendance table
+        columns = ("DNI", "First Name", "Last Name", "Middle Name", "Entry Time", "Exit Time")
+        self.attendance_table = ttk.Treeview(self.root, columns=columns, show='headings')
+        for col in columns:
+            self.attendance_table.heading(col, text=col)
+        self.attendance_table.grid(row=5, column=0, columnspan=3, padx=10, pady=10)
 
-        # Treeview
-        self.tree = ttk.Treeview(root, columns=("DNI", "Apellido Paterno", "Apellido Materno", "Nombres", "Fecha y Hora de Ingreso", "Fecha y Hora de Salida"), show='headings')
-        self.tree.heading("DNI", text="DNI")
-        self.tree.heading("Apellido Paterno", text="Apellido Paterno")
-        self.tree.heading("Apellido Materno", text="Apellido Materno")
-        self.tree.heading("Nombres", text="Nombres")
-        self.tree.heading("Fecha y Hora de Ingreso", text="Fecha y Hora de Ingreso")
-        self.tree.heading("Fecha y Hora de Salida", text="Fecha y Hora de Salida")
-        self.tree.grid(row=6, column=0, columnspan=2, pady=10, padx=10)
-
-        # Status message
-        self.lblMensaje = Label(root, text="", bg='#5fe891')
-        self.lblMensaje.grid(row=7, column=0, columnspan=2, pady=10)
-
-        # Botón para regresar al login principal
-        self.btnRegresar = ttk.Button(root, text="Regresar al Login", command=self.regresar_al_login, style='TButton')
-        self.btnRegresar.grid(row=8, column=0, columnspan=2, pady=10)
-
-    def extraer_contenido_entre_nombre(self, cadena, nombre_inicio, nombre_fin):
-        inicio = cadena.find(nombre_inicio)
-        if inicio != -1:
-            inicio += len(nombre_inicio)
-            fin = cadena.find(nombre_fin, inicio)
-            if fin != -1:
-                return cadena[inicio:fin]
-        return ""
-
-    def consultar_dni(self):
-        self.txtApellidoPaterno.delete(0, END)
-        self.txtApellidoMaterno.delete(0, END)
-        self.txtNombres.delete(0, END)
-        numero_dni = self.txtNumeroDNI.get()
-
-        if not numero_dni.strip():
+    def search_dni(self):
+        dni = self.dni_entry.get().strip()
+        if not dni:
             return
 
-        self.btnConsultar.config(state=DISABLED)
+        self.search_button.config(state=DISABLED)
         start_time = time.time()
 
         session = requests.Session()
         session.headers.update({
-            "Host": "eldni.com",
-            "sec-ch-ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"90\", \"Google Chrome\";v=\"90\"",
-            "sec-ch-ua-mobile": "?0",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-User": "?1",
-            "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"
+            "User-Agent": "Mozilla/5.0"
         })
 
         url = "https://eldni.com/pe/buscar-por-dni"
         response = session.get(url)
         if response.status_code == 200:
             html = response.text
-            token = self.extraer_contenido_entre_nombre(html, 'name="_token" value="', '">')
+            token = self.extract_token(html)
 
-            session.headers.update({
-                "Origin": "https://eldni.com",
-                "Referer": "https://eldni.com/pe/buscar-por-dni",
-                "Sec-Fetch-Site": "same-origin"
-            })
+            if token:
+                session.headers.update({
+                    "Origin": "https://eldni.com",
+                    "Referer": url
+                })
 
-            data = {
-                "_token": token,
-                "dni": numero_dni
-            }
-            response = session.post(url, data=data)
-            if response.status_code == 200:
-                html = response.text
-                tabla_inicio = '<table class="table table-striped table-scroll">'
-                tabla_fin = '</table>'
-                contenido_dni = self.extraer_contenido_entre_nombre(html, tabla_inicio, tabla_fin)
+                data = {
+                    "_token": token,
+                    "dni": dni
+                }
 
-                if contenido_dni:
-                    nombre_inicio = '<td>'
-                    nombre_fin = '</td>'
-                    arr_resultado = re.findall(f'{nombre_inicio}(.*?){nombre_fin}', contenido_dni)
-
-                    if len(arr_resultado) >= 4:
-                        self.txtApellidoPaterno.insert(0, arr_resultado[2])
-                        self.txtApellidoMaterno.insert(0, arr_resultado[3])
-                        self.txtNombres.insert(0, arr_resultado[1])
-                        mensaje_respuesta = f"Se realizó la consulta del número de DNI {numero_dni}"
+                response = session.post(url, data=data)
+                if response.status_code == 200:
+                    html = response.text
+                    user_data = self.extract_user_data(html)
+                    if user_data:
+                        self.fill_user_fields(user_data)
+                        message = f"DNI {dni} found successfully."
                     else:
-                        mensaje_respuesta = f"No se pudo realizar la consulta del número de DNI {numero_dni}."
+                        message = f"DNI {dni} not found."
                 else:
-                    mensaje_respuesta = f"No se pudo realizar la consulta del número de DNI {numero_dni}."
+                    message = f"Error searching for DNI {dni}: {response.text}"
             else:
-                mensaje_respuesta = f"Ocurrió un inconveniente al consultar los datos del DNI {numero_dni}.\nDetalle: {response.text}"
+                message = f"Unable to extract token for DNI {dni} search."
         else:
-            mensaje_respuesta = f"Ocurrió un inconveniente al consultar el número de DNI {numero_dni}.\nDetalle: {response.text}"
+            message = f"Error accessing DNI search page: {response.text}"
 
         elapsed_time = time.time() - start_time
-        self.lblMensaje.config(text=f"Procesado en {elapsed_time:.2f} seg.")
-        self.btnConsultar.config(state=NORMAL)
-        self.txtNumeroDNI.focus()
-        self.txtNumeroDNI.select_range(0, END)
-        
-        if 'exitosamente' not in mensaje_respuesta:
-            messagebox.showwarning("Consultar DNI", mensaje_respuesta)
-        else:
-            messagebox.showinfo("Consultar DNI", mensaje_respuesta)
+        self.search_button.config(state=NORMAL)
+        messagebox.showinfo("Search Result", f"{message}\nProcessed in {elapsed_time:.2f} seconds.")
 
-    def start_time(self, tipo):
-        self.fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    def extract_token(self, html):
+        return self.extract_between(html, 'name="_token" value="', '">')
 
-    def agregar_a_tabla(self, dni, apellido_paterno, apellido_materno, nombres, fecha_hora_ingreso, fecha_hora_salida):
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        self.tree.insert("", "end", values=(dni, apellido_paterno, apellido_materno, nombres, fecha_hora_ingreso, fecha_hora_salida))
+    def extract_user_data(self, html):
+        table_start = '<table class="table table-striped table-scroll">'
+        table_end = '</table>'
+        table_content = self.extract_between(html, table_start, table_end)
+        if table_content:
+            return re.findall('<td>(.*?)</td>', table_content)
+        return []
 
-    def registrar_horario(self, tipo):
-        numero_dni = self.txtNumeroDNI.get()
-        apellido_paterno = self.txtApellidoPaterno.get()
-        apellido_materno = self.txtApellidoMaterno.get()
-        nombres = self.txtNombres.get()
-        
-        if not (numero_dni and apellido_paterno and apellido_materno and nombres):
-            messagebox.showerror("Error", "Todos los campos deben estar llenos")
+    def extract_between(self, text, start, end):
+        try:
+            return text.split(start)[1].split(end)[0]
+        except IndexError:
+            return ""
+
+    def fill_user_fields(self, data):
+        if len(data) >= 4:
+            self.first_name_entry.delete(0, END)
+            self.first_name_entry.insert(0, data[1])
+            self.last_name_entry.delete(0, END)
+            self.last_name_entry.insert(0, data[2])
+            self.middle_name_entry.delete(0, END)
+            self.middle_name_entry.insert(0, data[3])
+
+    def register_attendance(self, type_):
+        dni = self.dni_entry.get().strip()
+        first_name = self.first_name_entry.get().strip()
+        last_name = self.last_name_entry.get().strip()
+        middle_name = self.middle_name_entry.get().strip()
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if not (dni and first_name and last_name and middle_name):
+            messagebox.showerror("Error", "All fields must be filled.")
             return
-        
-        if tipo == "ingreso":
-            if self.db.insert_record(numero_dni, apellido_paterno, apellido_materno, nombres, self.fecha_hora, ""):
-                self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, self.fecha_hora, "")
-                messagebox.showinfo("Guardar DNI", "Se registró su asistencia satisfactoriamente")
-            else:
-                messagebox.showwarning("Guardar DNI", "Ya existe un registro con este DNI en la fecha actual para ingreso")
-        
-        elif tipo == "salida":
-            if self.db.update_record_salida(numero_dni, self.fecha_hora):
-                self.agregar_a_tabla(numero_dni, apellido_paterno, apellido_materno, nombres, "", self.fecha_hora)
-                messagebox.showinfo("Guardar DNI", "Se registró su salida satisfactoriamente")
-            else:
-                messagebox.showwarning("Guardar DNI", "Ya existe un registro de salida para este DNI en la fecha actual")
-        
-        # Limpiar barra de texto y otros campos
-        self.txtNumeroDNI.delete(0, END)
-        self.txtApellidoPaterno.delete(0, END)
-        self.txtApellidoMaterno.delete(0, END)
-        self.txtNombres.delete(0, END)
-        self.txtNumeroDNI.focus()
 
-    def regresar_al_login(self):
-        self.root.destroy()
-        self.restart_callback()
+        if type_ == "entry":
+            if self.db.insert_record(dni, first_name, last_name, middle_name, timestamp, ""):
+                self.update_table(dni, first_name, last_name, middle_name, timestamp, "")
+                messagebox.showinfo("Success", "Entry registered successfully.")
+            else:
+                messagebox.showwarning("Warning", "Entry already registered for this DNI today.")
+        else:
+            if self.db.update_record_exit(dni, timestamp):
+                self.update_table(dni, first_name, last_name, middle_name, "", timestamp)
+                messagebox.showinfo("Success", "Exit registered successfully.")
+            else:
+                messagebox.showwarning("Warning", "Exit already registered for this DNI today.")
 
-    def __del__(self):
-        self.db.close()
+        self.clear_fields()
+
+    def update_table(self, dni, first_name, last_name, middle_name, entry_time, exit_time):
+        self.attendance_table.insert("", "end", values=(dni, first_name, last_name, middle_name, entry_time, exit_time))
+
+    def clear_fields(self):
+        self.dni_entry.delete(0, END)
+        self.first_name_entry.delete(0, END)
+        self.last_name_entry.delete(0, END)
+        self.middle_name_entry.delete(0, END)
+        self.dni_entry.focus()
 
 if __name__ == "__main__":
-    def restart_app():
-        root = Tk()
-        app = FrmConsultaDNI(root, restart_app)
-        root.mainloop()
-
     root = Tk()
-    app = FrmConsultaDNI(root, restart_app)
+    app = AttendanceManager(root)
     root.mainloop()
-
