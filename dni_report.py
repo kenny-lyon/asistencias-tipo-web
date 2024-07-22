@@ -6,6 +6,7 @@ from tkcalendar import Calendar
 from dni_database import DniDatabase
 from fpdf import FPDF
 import openpyxl
+import subprocess
 
 class FrmReporteDNI:
     def __init__(self, root, restart_callback):
@@ -39,7 +40,7 @@ class FrmReporteDNI:
         self.btnBackToLogin = Button(root, text="Cerrar sesión", command=self.volver_al_login)
         self.btnBackToLogin.grid(row=0, column=1, columnspan=1)
 
-        self.btnRegistroAsistencia = Button(root, text="Registro de Asistencia", command=self.ir_a_registro_asistencia)
+        self.btnRegistroAsistencia = Button(root, text="Reporte Mensual", command=self.ir_a_registro_asistencia)
         self.btnRegistroAsistencia.grid(row=4, column=0, columnspan=2, pady=10)
 
         self.load_today_records()
@@ -129,7 +130,7 @@ class FrmReporteDNI:
 
     def ir_a_registro_asistencia(self):
         self.root.destroy()
-        import registro_asistencia  # Asegúrate de que el archivo `registro_asistencia.py` esté en el mismo directorio
+        subprocess.Popen(["python", "registro_asistencia.py"])
 
     def __del__(self):
         self.db.close()
