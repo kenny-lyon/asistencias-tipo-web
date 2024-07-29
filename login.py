@@ -3,6 +3,7 @@ from _1er_scrip import FrmConsultaDNI
 from dni_report import FrmReporteDNI
 from datetime import datetime
 from PIL import Image, ImageTk
+import os
 
 class Login:
     def __init__(self, root):
@@ -11,8 +12,12 @@ class Login:
         self.root.geometry("480x500")
         self.root.configure(bg="#2C3E50")  # Fondo azul oscuro
 
+        # Obtener la ruta del directorio actual
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        image_path = os.path.join(current_dir, "Estadistica Informatica.png")
+        
         # Cargar y mostrar la imagen
-        self.img = Image.open("C:/Users/KENNY/Downloads/Estadistica Informatica.png")
+        self.img = Image.open(image_path)
         self.img = self.img.resize((200, 200), Image.LANCZOS)
         self.photo = ImageTk.PhotoImage(self.img)
         self.lblImage = Label(root, image=self.photo, bg="#2C3E50")
@@ -65,7 +70,7 @@ class Login:
         self.admin_login_window.geometry("350x200")
         self.admin_login_window.configure(bg="#34495E")  # Fondo gris oscuro
 
-        self.lblAdminUser = Label(self.admin_login_window, text="Usuario:", font=("Helvetica", 12), bg="#34495E", fg="#ECF0F1")
+        self.lblAdminUser = Label(self.admin_login_window, text="Credencial:", font=("Helvetica", 12), bg="#34495E", fg="#ECF0F1")
         self.lblAdminUser.grid(row=0, column=0, padx=10, pady=10, sticky=E)
         self.entryAdminUser = Entry(self.admin_login_window, font=("Helvetica", 12))
         self.entryAdminUser.grid(row=0, column=1, padx=10, pady=10)
