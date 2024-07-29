@@ -11,7 +11,7 @@ import subprocess
 class FrmReporteDNI:
     def __init__(self, root, restart_callback):
         self.root = root
-        self.root.title("Reporte de asistencia de DNI")
+        self.root.title("Reporte de asistencia diario y por fecha")
         self.root.configure(bg="#f0f0f0")
         self.restart_callback = restart_callback
 
@@ -61,11 +61,17 @@ class FrmReporteDNI:
 
         self.btnBackToLogin = ttk.Button(root, text="Cerrar sesión", command=self.volver_al_login)
         self.btnBackToLogin.grid(row=0, column=1, columnspan=1, pady=10, padx=10, sticky='e')
+        
+        # Asociar la tecla "Esc" al botón de cerrar sesión
+        self.root.bind('<Escape>', self.on_escape_key)
 
         self.btnRegistroAsistencia = ttk.Button(root, text="Reporte Mensual", command=self.ir_a_registro_asistencia)
         self.btnRegistroAsistencia.grid(row=4, column=0, columnspan=2, pady=10, padx=10, sticky='ew')
 
         self.load_today_records()
+        
+    def on_escape_key(self, event):
+        self.volver_al_login()
 
     def volver_al_login(self):
         self.root.destroy()
@@ -74,7 +80,7 @@ class FrmReporteDNI:
     def abrir_calendario(self):
         self.cal_window = Toplevel(self.root)
         self.cal_window.title("Seleccione el Intervalo de Fechas")
-        self.cal_window.geometry("400x300")
+        self.cal_window.geometry("400x510")
         self.cal_window.configure(bg="#f0f0f0")
 
         self.lblFechaInicio = Label(self.cal_window, text="Fecha de Inicio:", bg="#f0f0f0", font=('Arial', 10, 'bold'))
@@ -91,6 +97,11 @@ class FrmReporteDNI:
 
         self.btnSeleccionarIntervalo = ttk.Button(self.cal_window, text="Seleccionar Intervalo", command=self.seleccionar_intervalo)
         self.btnSeleccionarIntervalo.pack(pady=10)
+        # Asociar la tecla "Enter" al botón
+        self.cal_window.bind('<Return>', self.on_enter_key)
+        
+    def on_enter_key(self, event):
+        self.seleccionar_intervalo()
 
     def seleccionar_intervalo(self):
         fecha_inicio = self.cal_inicio.get_date()
@@ -117,7 +128,7 @@ class FrmReporteDNI:
             self.tree.insert("", "end", values=(record[1], record[2], record[3], record[4], record[5], record[6]))
 
     def convertir_a_pdf(self):
-        records = self.db.fetch_all_records()
+        records = [self.tree.item(item)["values"] for item in self.tree.get_children()]
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
@@ -130,15 +141,16 @@ class FrmReporteDNI:
         pdf.ln()
 
         for record in records:
-            for item in record[1:]:
+            for item in record:
                 pdf.cell(40, 10, str(item), border=1)
             pdf.ln()
 
-        pdf.output("reporte_dni.pdf")
-        messagebox.showinfo("Información", "El reporte se ha guardado como PDF")
-
+        filename = f"reporte_dni_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        pdf.output(filename)
+        messagebox.showinfo("Información", f"El reporte se ha guardado como {filename}")
+        
     def convertir_a_excel(self):
-        records = self.db.fetch_all_records()
+        records = [self.tree.item(item)["values"] for item in self.tree.get_children()]
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = "Reporte de DNI"
@@ -147,10 +159,11 @@ class FrmReporteDNI:
         sheet.append(headers)
 
         for record in records:
-            sheet.append(record[1:])
+            sheet.append(record)
 
-        workbook.save("reporte_dni.xlsx")
-        messagebox.showinfo("Información", "El reporte se ha guardado como Excel")
+        filename = f"reporte_dni_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        workbook.save(filename)
+        messagebox.showinfo("Información", f"El reporte se ha guardado como {filename}")
 
     def ir_a_registro_asistencia(self):
         self.root.destroy()
@@ -162,7 +175,7 @@ class FrmReporteDNI:
 if __name__ == "__main__":
     def restart_login():
         root = Tk()
-        app = FrmReporteDNI(root, restart_login)
+        app = Login(root)
         root.mainloop()
 
     root = Tk()
